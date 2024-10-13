@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/road"
 
 <PageTitle>Home</PageTitle>
 
@@ -8,3 +8,91 @@
 <br>
 <br>
 <br>
+
+@if (road == null)
+{
+    <div>@error</div>
+    <div>
+        <label>rows:</label> 
+        <input @bind="rows" />
+        <label>columns:</label>
+        <input @bind="columns" />
+        <button @onclick="CreateRoad">Create Road</button>
+    </div>
+}
+else
+{
+    <table>
+        @for (int r = 0; r < road.RowCount; r++)
+        {
+            <tr>
+                @for (int c = 0; c < road.ColCount; c++)
+                {
+                    <td>
+                        @if (road.GetVehicle(r, c) != null)
+                        {
+                            <img src="@road.GetVehicle(r, c).GetImagePath()" height="100" />
+                        }
+                    </td>
+                }
+            </tr>
+        }
+    </table>
+
+    <div>
+        Set a Vehicle
+        <div>
+            Row: <input @bind="vehicleRowInput" />
+        </div>
+        <div>
+            Column: <input @bind="vehicleColumnInput" />
+        </div>
+        <button @onclick=@(() => SetVehicle("Car"))>Set Car</button>
+        <button @onclick=@(() => SetVehicle("Bus"))>Set Bus</button>
+        <button @onclick=@(() => SetVehicle("FireTruck"))>Set FireTruck</button>
+        <button @onclick=@(() => SetVehicle("Taxi"))>Set Taxi</button>
+    </div>
+}
+
+@code {
+    private string rows;
+    private string columns;
+    private IRoad road;
+    private string error;
+    private string vehicleRowInput;
+    private string vehicleColumnInput;
+
+    private void CreateRoad()
+    {
+        if (int.TryParse(rows, out int rowNum) && int.TryParse(columns, out int colNum))
+        {
+            road = new Road(rowNum, colNum);
+            error = null;
+        }
+        else
+        {
+            error = "Invalid input for rows or columns.";
+        }
+    }
+
+    private void SetVehicle(string vehicleType)
+    {
+        if (int.TryParse(vehicleRowInput, out int row) && int.TryParse(vehicleColumnInput, out int col))
+        {
+            IVehicle vehicle = vehicleType switch
+            {
+                "Car" => new Car(),
+                "Bus" => new Bus(),
+                "FireTruck" => new FireTruck(),
+                "Taxi" => new Taxi(),
+                _ => null
+            };
+
+            road.SetVehicle(row, col, vehicle);
+        }
+        else
+        {
+            error = "Invalid input for row or column.";
+        }
+    }
+}
